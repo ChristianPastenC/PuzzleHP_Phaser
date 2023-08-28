@@ -54,7 +54,6 @@ class Bootloader extends Phaser.Scene {
             frameWidth: 500,
             frameHeight: 581,
         });
-        this.load.audio('basse', 'themeSong.ogg');
         this.load.image(['skull', 'dobby', 'hermione', 'space']);
         for (let i = 0; i < 8; i++) {
             this.load.image('A' + (i + 1));
@@ -75,8 +74,6 @@ class Bootloader extends Phaser.Scene {
             repeat: -1,
         });
         this.back.play('back_anim');
-        this.music = this.sound.add('basse', { loop: true });
-        this.music.play();
         this.infoText = this.add.text(750, 575, '*Selecciona un juego para reiniciar', { font: '20px Arial', fill: '#000000' });
 
 
@@ -85,12 +82,10 @@ class Bootloader extends Phaser.Scene {
         this.winner.setVisible(false);
 
         this.menu();
-        this.firstBoard();
+        this.changeBoard('A');
         const events = Phaser.Input.Events;
 
-        this.input.on(events.DRAG_START, (pointer, obj, dragX, dragY) => {
-            obj.setScale(0.9);
-        });
+        this.input.on(events.DRAG_START, (pointer, obj, dragX, dragY) => obj.setScale(0.9));
 
         this.input.on(events.DRAG, (pointer, obj, dragX, dragY) => {
             obj.x = dragX;
@@ -126,89 +121,15 @@ class Bootloader extends Phaser.Scene {
         });
     }
 
-    firstBoard() {
-        this.puzzle = 'A';
-        for (let i = 0; i < 9; i++) {
-            this.grid[i] = i;
-        }
+    changeBoard(selected) {
+        this.puzzle = selected;
+        for (let i = 0; i < 9; i++) this.grid[i] = i;
 
         let posX = 150, posY = 75;
         this.grid.sort(function () { return Math.random() - 0.5 })
         for (let i = 0; i < this.grid.length; i++) {
             if ((this.grid[i] + 1) != 9) {
-                this.aux = this.add.image(posX, posY, 'A' + (this.grid[i] + 1));
-                this.aux.setOrigin(0, 0);
-                this.aux.setDepth(2);
-                this.aux.setInteractive();
-                this.input.setDraggable(this.aux);
-                this.aux.name = this.grid[i] + 1;
-                this.grid[i] = this.aux.name;
-                this.pieces[i] = this.aux;
-            } else {
-                this.black = this.add.image(posX, posY, 'space');
-                this.black.setOrigin(0, 0);
-                this.black.setDepth(1);
-                this.black.setInteractive();
-                this.black.input.dropZone = true;
-                this.black.name = this.grid[i] + 1;
-                this.grid[i] = this.black.name;
-                this.pieces[i] = this.black;
-            }
-            posX += 300;
-            if ((i + 1) % 3 == 0) {
-                posY += 150;
-                posX = 150;
-            }
-        }
-    }
-
-    secondBoard() {
-        this.puzzle = 'B';
-        for (let i = 0; i < 9; i++) {
-            this.grid[i] = i;
-        }
-
-        let posX = 150, posY = 75;
-        this.grid.sort(function () { return Math.random() - 0.5 })
-        for (let i = 0; i < this.grid.length; i++) {
-            if ((this.grid[i] + 1) != 9) {
-                this.aux = this.add.image(posX, posY, 'B' + (this.grid[i] + 1));
-                this.aux.setOrigin(0, 0);
-                this.aux.setDepth(2);
-                this.aux.setInteractive();
-                this.input.setDraggable(this.aux);
-                this.aux.name = this.grid[i] + 1;
-                this.grid[i] = this.aux.name;
-                this.pieces[i] = this.aux;
-            } else {
-                this.black = this.add.image(posX, posY, 'space');
-                this.black.setOrigin(0, 0);
-                this.black.setDepth(1);
-                this.black.setInteractive();
-                this.black.input.dropZone = true;
-                this.black.name = this.grid[i] + 1;
-                this.grid[i] = this.black.name;
-                this.pieces[i] = this.black;
-            }
-            posX += 300;
-            if ((i + 1) % 3 == 0) {
-                posY += 150;
-                posX = 150;
-            }
-        }
-    }
-
-    thirdBoard() {
-        this.puzzle = 'C';
-        for (let i = 0; i < 9; i++) {
-            this.grid[i] = i;
-        }
-
-        let posX = 150, posY = 75;
-        this.grid.sort(function () { return Math.random() - 0.5 })
-        for (let i = 0; i < this.grid.length; i++) {
-            if ((this.grid[i] + 1) != 9) {
-                this.aux = this.add.image(posX, posY, 'C' + (this.grid[i] + 1));
+                this.aux = this.add.image(posX, posY, selected + (this.grid[i] + 1));
                 this.aux.setOrigin(0, 0);
                 this.aux.setDepth(2);
                 this.aux.setInteractive();
@@ -246,28 +167,20 @@ class Bootloader extends Phaser.Scene {
         this.imgC.name = 'MenuC';
         const events = Phaser.Input.Events;
         this.input.on(events.GAMEOBJECT_OVER, (pointer, gameObject) => {
-            if (gameObject.name == 'MenuA' || gameObject.name == 'MenuB' || gameObject.name == 'MenuC') {
+            if (typeof gameObject.name === 'string' && gameObject.name.includes('Menu')) {
                 gameObject.setScale(.12);
                 gameObject.setDepth(2);
             }
         });
         this.input.on(events.GAMEOBJECT_OUT, (pointer, gameObject) => {
-            if (gameObject.name == 'MenuA' || gameObject.name == 'MenuB' || gameObject.name == 'MenuC') {
+            if (typeof gameObject.name === 'string' && gameObject.name.includes('Menu')) {
                 gameObject.setScale(.1);
                 gameObject.setDepth(1);
             }
         });
         this.input.on(events.GAMEOBJECT_DOWN, (pointer, gameObj) => {
-            if (gameObj.name == 'MenuA') {
-                this.clean('A');
-            }
-            if (gameObj.name == 'MenuB') {
-                this.clean('B');
-
-            }
-            if (gameObj.name == 'MenuC') {
-                this.clean('C');
-            }
+            if (typeof gameObj.name === 'string' && gameObj.name.includes('Menu'))
+                this.clean(gameObj.name.slice(-1));
         });
 
     }
@@ -275,10 +188,8 @@ class Bootloader extends Phaser.Scene {
     move(init, end) {
         let a, b;
         for (let i = 0; i < 9; i++) {
-            if (init == this.grid[i])
-                a = i;
-            if (end == this.grid[i])
-                b = i;
+            if (init == this.grid[i]) a = i;
+            if (end == this.grid[i]) b = i;
         }
         this.grid[a] = end;
         this.grid[b] = init;
@@ -290,34 +201,19 @@ class Bootloader extends Phaser.Scene {
             if (this.grid[i] != (i + 1)) {
                 complete = false;
                 break;
-            } else {
-                continue;
-            }
+            } else continue;
         }
         return complete;
     }
 
     clean(op) {
         this.winner.destroy();
-        for (let i = 0; i < 9; i++) {
-            this.pieces[i].destroy();
-        }
-        if (op == 'A')
-            this.firstBoard();
-        if (op == 'B')
-            this.secondBoard();
-        if (op == 'C')
-            this.thirdBoard();
+        for (let i = 0; i < 9; i++) this.pieces[i].destroy();
+        if (op) this.changeBoard(op);
     }
 
     winning() {
-        let aux;
-        if (this.puzzle == 'A')
-            aux = 'skull';
-        if (this.puzzle == 'B')
-            aux = 'dobby';
-        if (this.puzzle == 'C')
-            aux = 'hermione';
+        let aux = this.puzzle === 'A' && 'skull' || this.puzzle === 'B' && 'dobby' || this.puzzle === 'B' && 'hermione';
         this.winner = this.add.image(600, 300, aux);
         this.winner.setOrigin(0.5, 0.5);
         this.winner.setDepth(3);
